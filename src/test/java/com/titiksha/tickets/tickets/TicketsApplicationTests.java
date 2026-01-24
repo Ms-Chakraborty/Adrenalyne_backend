@@ -1,4 +1,4 @@
-package com.titiksha.tickets;
+package com.titiksha.tickets.tickets;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
