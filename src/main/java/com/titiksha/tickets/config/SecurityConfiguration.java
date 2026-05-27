@@ -81,7 +81,8 @@ public JwtAuthenticationConverter jwtAuthenticationConverter() {
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowedOrigins(Arrays.asList(
             "https://adreanalyne-frontend-fzhs.vercel.app",
-            "http://localhost:5173"
+            "http://localhost:5173",
+            "http://localhost:5174"
         ));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
         configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "Accept", "Origin"));
