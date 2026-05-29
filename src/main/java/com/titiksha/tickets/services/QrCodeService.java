@@ -9,4 +9,6 @@ public interface QrCodeService {
   QrCode generateQrCode(Ticket ticket);
 
   byte[] getQrCodeImageForUserAndTicket(UUID userId, UUID ticketId);
+
+  java.util.UUID getQrCodeIdForUserAndTicket(UUID userId, UUID ticketId);
 }

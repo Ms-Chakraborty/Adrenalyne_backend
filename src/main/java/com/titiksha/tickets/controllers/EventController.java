@@ -20,8 +20,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -41,10 +40,10 @@ public class EventController {
 
   @PostMapping
   public ResponseEntity<CreateEventResponseDto> createEvent(
-      @AuthenticationPrincipal Jwt jwt,
+      Authentication authentication,
       @Valid @RequestBody CreateEventRequestDto createEventRequestDto) {
     CreateEventRequest createEventRequest = eventMapper.fromDto(createEventRequestDto);
-    UUID userId = parseUserId(jwt);
+    UUID userId = parseUserId(authentication);
 
     Event createdEvent = eventService.createEvent(userId, createEventRequest);
     CreateEventResponseDto createEventResponseDto = eventMapper.toDto(createdEvent);
@@ -53,11 +52,11 @@ public class EventController {
 
   @PutMapping(path = "/{eventId}")
   public ResponseEntity<UpdateEventResponseDto> updateEvent(
-      @AuthenticationPrincipal Jwt jwt,
+      Authentication authentication,
       @PathVariable UUID eventId,
       @Valid @RequestBody UpdateEventRequestDto updateEventRequestDto) {
     UpdateEventRequest updateEventRequest = eventMapper.fromDto(updateEventRequestDto);
-    UUID userId = parseUserId(jwt);
+    UUID userId = parseUserId(authentication);
 
     Event updatedEvent = eventService.updateEventForOrganizer(
         userId, eventId, updateEventRequest
@@ -71,9 +70,9 @@ public class EventController {
 
   @GetMapping
   public ResponseEntity<Page<ListEventResponseDto>> listEvents(
-      @AuthenticationPrincipal Jwt jwt, Pageable pageable
+      Authentication authentication, Pageable pageable
   ) {
-    UUID userId = parseUserId(jwt);
+    UUID userId = parseUserId(authentication);
     Page<Event> events = eventService.listEventsForOrganizer(userId, pageable);
     return ResponseEntity.ok(
         events.map(eventMapper::toListEventResponseDto)
@@ -82,10 +81,10 @@ public class EventController {
 
   @GetMapping(path = "/{eventId}")
   public ResponseEntity<GetEventDetailsResponseDto> getEvent(
-      @AuthenticationPrincipal Jwt jwt,
+      Authentication authentication,
       @PathVariable UUID eventId
   ) {
-    UUID userId = parseUserId(jwt);
+    UUID userId = parseUserId(authentication);
     return eventService.getEventForOrganizer(userId, eventId)
         .map(eventMapper::toGetEventDetailsResponseDto)
         .map(ResponseEntity::ok)
@@ -94,10 +93,10 @@ public class EventController {
 
   @DeleteMapping(path = "/{eventId}")
   public ResponseEntity<Void> deleteEvent(
-      @AuthenticationPrincipal Jwt jwt,
+      Authentication authentication,
       @PathVariable UUID eventId
   ) {
-    UUID userId = parseUserId(jwt);
+    UUID userId = parseUserId(authentication);
     eventService.deleteEventForOrganizer(userId, eventId);
     return ResponseEntity.noContent().build();
   }

@@ -7,6 +7,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
@@ -29,18 +30,26 @@ public class UserProvisioningFilter extends OncePerRequestFilter {
 
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
-    if (authentication != null
-        && authentication.isAuthenticated()
-        && authentication.getPrincipal() instanceof Jwt jwt) {
+    if (authentication != null && authentication.isAuthenticated()) {
+      UUID userId;
+      String username;
+      String email;
 
-      UUID keycloakId = UUID.fromString(jwt.getSubject());
+      if (authentication.getPrincipal() instanceof Jwt jwt) {
+        userId = UUID.fromString(jwt.getSubject());
+        username = jwt.getClaimAsString("preferred_username");
+        email = jwt.getClaimAsString("email");
+      } else {
+        username = authentication.getName();
+        userId = UUID.nameUUIDFromBytes(("dev:" + username).getBytes(StandardCharsets.UTF_8));
+        email = username + "@local.dev";
+      }
 
-      if (!userRepository.existsById(keycloakId)) {
-
+      if (!userRepository.existsById(userId)) {
         User user = new User();
-        user.setId(keycloakId);
-        user.setName(jwt.getClaimAsString("preferred_username"));
-        user.setEmail(jwt.getClaimAsString("email"));
+        user.setId(userId);
+        user.setName(username);
+        user.setEmail(email);
 
         userRepository.save(user);
       }

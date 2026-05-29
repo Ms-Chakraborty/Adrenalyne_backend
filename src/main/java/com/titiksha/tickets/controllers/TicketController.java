@@ -16,8 +16,7 @@ import org.springframework.http.CacheControl;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -34,22 +33,22 @@ public class TicketController {
 
   @GetMapping
   public Page<ListTicketResponseDto> listTickets(
-      @AuthenticationPrincipal Jwt jwt,
+      Authentication authentication,
       Pageable pageable
   ) {
     return ticketService.listTicketsForUser(
-        parseUserId(jwt),
+        parseUserId(authentication),
         pageable
     ).map(ticketMapper::toListTicketResponseDto);
   }
 
   @GetMapping(path = "/{ticketId}")
   public ResponseEntity<GetTicketResponseDto> getTicket(
-      @AuthenticationPrincipal Jwt jwt,
+      Authentication authentication,
       @PathVariable UUID ticketId
   ) {
     return ticketService
-        .getTicketForUser(parseUserId(jwt), ticketId)
+        .getTicketForUser(parseUserId(authentication), ticketId)
         .map(ticketMapper::toGetTicketResponseDto)
         .map(ResponseEntity::ok)
         .orElse(ResponseEntity.notFound().build());
@@ -57,11 +56,11 @@ public class TicketController {
 
   @GetMapping(path = "/{ticketId}/qr-codes")
   public ResponseEntity<byte[]> getTicketQrCode(
-      @AuthenticationPrincipal Jwt jwt,
+      Authentication authentication,
       @PathVariable UUID ticketId
   ) {
     byte[] qrCodeImage = qrCodeService.getQrCodeImageForUserAndTicket(
-        parseUserId(jwt),
+        parseUserId(authentication),
         ticketId
     );
 
@@ -72,6 +71,19 @@ public class TicketController {
     return ResponseEntity.ok()
         .headers(headers)
         .body(qrCodeImage);
+  }
+
+  @GetMapping(path = "/{ticketId}/qr-codes/id")
+  public ResponseEntity<String> getTicketQrCodeId(
+      Authentication authentication,
+      @PathVariable UUID ticketId
+  ) {
+    UUID qrCodeId = qrCodeService.getQrCodeIdForUserAndTicket(
+        parseUserId(authentication),
+        ticketId
+    );
+
+    return ResponseEntity.ok(qrCodeId.toString());
   }
 
 }

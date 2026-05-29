@@ -65,6 +65,14 @@ public class QrCodeServiceImpl implements QrCodeService {
     }
   }
 
+  @Override
+  public UUID getQrCodeIdForUserAndTicket(UUID userId, UUID ticketId) {
+    QrCode qrCode = qrCodeRepository.findByTicketIdAndTicketPurchaserId(ticketId, userId)
+        .orElseThrow(QrCodeNotFoundException::new);
+
+    return qrCode.getId();
+  }
+
   private String generateQrCodeImage(UUID uniqueId) throws WriterException, IOException {
     BitMatrix bitMatrix = qrCodeWriter.encode(
         uniqueId.toString(),
